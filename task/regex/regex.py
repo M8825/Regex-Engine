@@ -6,6 +6,10 @@ def check_word(reg, text):
         if reg == '$':
             return True
         return False
+
+    if reg[0] == '\\':
+        reg = reg[1:]
+
     if reg[0] != text[0] and reg[0] != '.':
         if reg[1:2] in ['?', '*']:  # matches the preceding character zero times
             return check_word(reg[2:], text)
@@ -14,11 +18,11 @@ def check_word(reg, text):
     if reg[1:2] == '?':  # matches the preceding character once
         return check_word(reg[2:], text[1:])
 
-    if reg[1:2] == '*': # col.*r|colr
+    if reg[1:2] == '*' and reg[0] != '\\': # col.*r|colr
         # matches the preceding character once or more times
         return check_word(reg[2:], text) or check_word(reg, text[1:])
 
-    if reg[1:2] == '+':
+    if reg[1:2] == '+' and reg[0] != '\\':
         # matches the preceding character once or more times
         return check_word(reg[2:], text[1:]) or check_word(reg, text[1:])
 
