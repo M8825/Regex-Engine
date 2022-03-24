@@ -1,71 +1,44 @@
-from re import match
+def check_word(reg, text):
 
-
-class RegexEngine:
-
-    def __init__(self, regex, chars):
-        self.regex = regex
-        self.chars = chars
-
-    def equal_length(self):
-        """
-        Recursive method to compare the entire regex and string
-
-        :return: bool output of comparison
-        """
-        if not self.regex:
+    if not reg:
+        return True
+    if not text:
+        if reg == '$':
             return True
-        elif not self.chars:
-            return False
-        is_same = bool(match(self.regex[0], self.chars[0]))
-
-        if is_same:
-            self.regex = self.regex[1:]
-            self.chars = self.chars[1:]
-            return self.equal_length()
-
+        return False
+    if reg[0] != text[0] and reg[0] != '.':
+        if reg[1:2] in ['?', '*']:  # matches the preceding character zero times
+            return check_word(reg[2:], text)
         return False
 
-    def unequal_string(self):
-        """
-        Recursive method to compare the entire regex and string
+    if reg[1:2] == '?':  # matches the preceding character once
+        return check_word(reg[2:], text[1:])
 
-        :return: bool output of comparison
-        """
-        if not self.regex:  # In case of empty regex
-            return True
-        elif not self.chars:
-            return False
-        elif self.equal_length():
-            return True
-        self.chars = self.chars[1:]
+    if reg[1:2] == '*': # col.*r|colr
+        # matches the preceding character once or more times
+        return check_word(reg[2:], text) or check_word(reg, text[1:])
 
-        return self.unequal_string()
+    if reg[1:2] == '+':
+        # matches the preceding character once or more times
+        return check_word(reg[2:], text[1:]) or check_word(reg, text[1:])
 
-    def metacharacters(self):
-        if self.regex.startswith('^') and self.regex.endswith('$'):
-            self.regex = self.regex.strip('^').strip('$')
-
-            return self.equal_length() if len(self.regex) == len(self.chars) \
-                else False
-        elif self.regex.startswith('^'):
-            self.regex = self.regex.strip('^')
-
-            return self.equal_length()
-        elif self.regex.endswith('$'):
-            self.regex = self.regex.strip('$')
-            self.chars = self.chars[-len(self.regex):]
-
-            return self.equal_length()
-        else:
-            return self.unequal_string()
+    return check_word(reg[1:], text[1:])
 
 
-def main():
-    regex, chars = input().split('|')
-    regexeng = RegexEngine(regex, chars)
-    print(regexeng.metacharacters())
+def check_string(reg, text):
+    if not reg:
+        return True
+    elif not text or len(text) < len(reg.replace('?','').replace('*','').replace('+','').replace('$','')) - 1:
+        return False
+
+    if reg.startswith('^'):
+        return check_word(reg.lstrip('^'), text)
+
+    if check_word(reg, text):
+        return True
+    else:
+        return check_string(reg, text[1:])
 
 
-if __name__ == '__main__':
-    main()
+regex, string = input().split('|')
+print(check_string(regex, string))
