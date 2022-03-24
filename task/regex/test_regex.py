@@ -30,6 +30,13 @@ class TestRegex(unittest.TestCase):
         self.assertFalse(check_string('app$', 'apple'), 'app$|apple')
         self.assertFalse(check_string('^le', 'apple'), '^le|apple')
 
+        self.assertTrue(check_string('\.$', 'end.'), '\.$|end.')
+        self.assertTrue(check_string('3\+3', '3+3=6'), '3\+3|3+3=6')
+        self.assertTrue(check_string('\?', 'Is this working?'), '\?|Is this working?')
+        self.assertTrue(check_string('\\', '\\'), '\\\\|\\')
+        self.assertFalse(check_string('colou\?r', 'color'), 'colou\?r|color')
+        self.assertFalse(check_string('colou\?r', 'colour'), 'colou\?r|colour')
+
 
 if __name__ == "__main__":
     unittest.main()
