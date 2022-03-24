@@ -1,49 +1,70 @@
 from re import match
 
 
-def match_it(regex, chars):
-    """
-    Recursion function. Returns True if every character in regular expression
-    and in string match.
+class RegexEngine:
 
-    :param regex: Regular expression.
-    :param chars: String to match the regex
-    :return: True or False
-    """
-    if not regex:
-        return True
-    elif not chars:
+    def __init__(self, regex, chars):
+        self.regex = regex
+        self.chars = chars
+
+    def equal_length(self):
+        """
+        Recursive method to compare the entire regex and string
+
+        :return: bool output of comparison
+        """
+        if not self.regex:
+            return True
+        elif not self.chars:
+            return False
+        is_same = bool(match(self.regex[0], self.chars[0]))
+
+        if is_same:
+            self.regex = self.regex[1:]
+            self.chars = self.chars[1:]
+            return self.equal_length()
+
         return False
-    is_same = bool(match(regex[0], chars[0]))
 
-    if is_same:
-        return match_it(regex[1:], chars[1:])
+    def unequal_string(self):
+        """
+        Recursive method to compare the entire regex and string
 
-    return False
+        :return: bool output of comparison
+        """
+        if not self.regex:  # In case of empty regex
+            return True
+        elif not self.chars:
+            return False
+        elif self.equal_length():
+            return True
+        self.chars = self.chars[1:]
 
+        return self.unequal_string()
 
-def slice_string(regex, chars):
-    """
-    Recursion function. Calls itself until length of the string is 0. or
-    returns True if Regexp and String match.
+    def metacharacters(self):
+        if self.regex.startswith('^') and self.regex.endswith('$'):
+            self.regex = self.regex.strip('^').strip('$')
 
-    :param regex: Regular expression.
-    :param chars: String to match the regex
-    :return: True or False
-    """
-    if not regex:  # In case if empty regexp
-        return True
-    elif not chars:
-        return False
-    elif match_it(regex, chars):
-        return True
+            return self.equal_length() if len(self.regex) == len(self.chars) \
+                else False
+        elif self.regex.startswith('^'):
+            self.regex = self.regex.strip('^')
 
-    return slice_string(regex, chars[1:])
+            return self.equal_length()
+        elif self.regex.endswith('$'):
+            self.regex = self.regex.strip('$')
+            self.chars = self.chars[-len(self.regex):]
+
+            return self.equal_length()
+        else:
+            return self.unequal_string()
 
 
 def main():
     regex, chars = input().split('|')
-    print(slice_string(regex, chars))
+    regexeng = RegexEngine(regex, chars)
+    print(regexeng.metacharacters())
 
 
 if __name__ == '__main__':
